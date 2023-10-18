@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+
+  mysql:
+    image: mysql:8.0.32
+    container_name: pagamento-db
+    ports:
+      - "3306:3306"
+    volumes:
+      - pagamento-db:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: pagamento-db
+      MYSQL_ROOT_PASSWORD: ifljava
+    networks:
+      - gestao-mercados-microsservices-bridge
+
+  pagamento-ms:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    image: luizmiguelvb/pagamento-ms
+    container_name: pagamento-ms
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    environment:
+      - ADDITIONAL_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -Xmx1G -Xms128m -XX:MaxMetaspaceSize=128m
+      - PROFILE=dev
+    networks:
+      - gestao-mercados-microsservices-bridge
+    depends_on:
+      - mysql
+
+networks:
+  gestao-mercados-microsservices-bridge:
+    name: "gestao-mercados-microsservices-bridge"
+    driver: bridge
+    external: true
+volumes:
+  pagamento-db:
