@@ -3,7 +3,7 @@ package br.com.microsservice.pagamentoms.service;
 import br.com.microsservice.pagamentoms.domain.entity.Pagamento;
 import br.com.microsservice.pagamentoms.dto.PagamentoDTO;
 import br.com.microsservice.pagamentoms.repository.PagamentoRepository;
-import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ public class RealizacaoPagamentoService {
     public PagamentoDTO detalhar(Long id) {
         var pedido = pagamentoRepository
                 .findById(id)
-                .orElseThrow(EntityExistsException::new);
+                .orElseThrow(EntityNotFoundException::new);
         return modelMapper.map(pedido, PagamentoDTO.class);
     }
 

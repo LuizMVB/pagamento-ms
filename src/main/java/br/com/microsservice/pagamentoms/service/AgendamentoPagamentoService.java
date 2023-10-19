@@ -4,8 +4,11 @@ import br.com.microsservice.pagamentoms.domain.StatusPagamentoEnum;
 import br.com.microsservice.pagamentoms.domain.entity.Pagamento;
 import br.com.microsservice.pagamentoms.repository.PagamentoRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,6 +18,9 @@ public class AgendamentoPagamentoService {
 
     @Autowired
     private PagamentoRepository pagamentoRepository;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * Realiza a efetivação do pagamento. Simula o consumo de um gateway de pagamento
@@ -27,10 +33,15 @@ public class AgendamentoPagamentoService {
         // realiza o pagamento através da chamada de um gateway de pagamento e gera nota fiscal
 
         pagamentoList.forEach(pagamento -> {
-            pagamento.setStatus(StatusPagamentoEnum.PAGO);
+            pagamento.setStatus(StatusPagamentoEnum.EFETIVADO);
             pagamento.setDataEfetivacao(LocalDateTime.now());
         });
 
-        pagamentoRepository.saveAll(pagamentoList);
+        List<Pagamento> pagamentoEfetivadoList = pagamentoRepository.saveAll(pagamentoList);
+
+        if(!CollectionUtils.isEmpty(pagamentoEfetivadoList)) {
+            Message message = new Message(("O pagamento foi concluído para os pedidos: " + pagamentoEfetivadoList.stream().map(Pagamento::getIdPedido).toList()).getBytes());
+            rabbitTemplate.send("pagamento.concluido", message);
+        }
     }
 }

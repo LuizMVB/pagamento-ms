@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Classe responsável por efetivar os pagamentos realizados segundo um dado
  * período de tempo
@@ -20,7 +22,7 @@ public class PagamentoScheduler {
      * através de um batch, porém como esse não é o foco do projeto, resolvi
      * seguir dessa forma
      */
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 30, timeUnit = TimeUnit.SECONDS)
     public void reportCurrentTime() {
         agendamentoPagamentoService.efetivarPagamento();
     }
