@@ -40,8 +40,7 @@ public class AgendamentoPagamentoService {
         List<Pagamento> pagamentoEfetivadoList = pagamentoRepository.saveAll(pagamentoList);
 
         if(!CollectionUtils.isEmpty(pagamentoEfetivadoList)) {
-            Message message = new Message(("O pagamento foi concluído para os pedidos: " + pagamentoEfetivadoList.stream().map(Pagamento::getIdPedido).toList()).getBytes());
-            rabbitTemplate.send("pagamento.concluido", message);
+            rabbitTemplate.convertAndSend("pagamento.concluido", pagamentoEfetivadoList);
         }
     }
 }
